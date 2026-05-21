@@ -40,6 +40,9 @@ export default async function Navbar() {
 
         {/* 메뉴 */}
         <div className="flex items-center gap-6 text-sm">
+          <Link href="/matches" className="hover:text-orange-500 transition-colors">
+            경기 일정
+          </Link>
           <Link href="/board" className="hover:text-orange-500 transition-colors">
             게시판
           </Link>
