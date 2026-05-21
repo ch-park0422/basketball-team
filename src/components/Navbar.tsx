@@ -1,19 +1,29 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 
-async function getUser() {
+async function getUserWithRole() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl?.startsWith("https://") || !supabaseKey) return null;
 
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  return data.user;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  return { user, role: profile?.role ?? "user" };
 }
 
 export default async function Navbar() {
-  const user = await getUser();
+  const result = await getUserWithRole();
+  const user = result?.user;
+  const role = result?.role;
 
   const name = user?.user_metadata?.name as string | undefined;
   const jerseyNumber = user?.user_metadata?.jersey_number as number | undefined;
@@ -36,6 +46,14 @@ export default async function Navbar() {
           <Link href="/videos" className="hover:text-orange-500 transition-colors">
             영상
           </Link>
+          {role === "admin" && (
+            <Link
+              href="/admin/users"
+              className="text-orange-600 font-semibold hover:text-orange-700 transition-colors"
+            >
+              회원 관리
+            </Link>
+          )}
 
           {user ? (
             <>
