@@ -50,12 +50,26 @@ export default async function Navbar() {
             영상
           </Link>
           {role === "admin" && (
-            <Link
-              href="/admin/users"
-              className="text-orange-600 font-semibold hover:text-orange-700 transition-colors"
-            >
-              회원 관리
-            </Link>
+            <>
+              <Link
+                href="/admin/users"
+                className="text-orange-600 font-semibold hover:text-orange-700 transition-colors"
+              >
+                회원 관리
+              </Link>
+              <Link
+                href="/admin/team-builder"
+                className="text-orange-600 font-semibold hover:text-orange-700 transition-colors"
+              >
+                팀 빌더
+              </Link>
+              <Link
+                href="/admin/harness"
+                className="text-orange-600 font-semibold hover:text-orange-700 transition-colors"
+              >
+                하네스
+              </Link>
+            </>
           )}
 
           {user ? (

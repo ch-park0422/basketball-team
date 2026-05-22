@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import MatchCard from "./MatchCard";
 import CreateMatchModal from "./CreateMatchModal";
 import RealtimeListener from "./RealtimeListener";
+import type { TeamDisplay } from "./MatchCard";
 
 type AttendanceRow = {
   id: string;
@@ -20,44 +21,185 @@ type Match = {
   created_at: string;
 };
 
+type ProfileRow = {
+  id: string;
+  name: string;
+  jersey_number: number | null;
+  position: string | null;
+};
+
+type RawTeam = {
+  match_id: string;
+  team_a_members: string[];
+  team_b_members: string[];
+  team_c_members: string[] | null;
+};
+
+type VideoLink = {
+  hasFull: boolean;
+  hasHighlight: boolean;
+};
+
 export default async function MatchesPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 현재 유저 role 확인
+  // 현재 유저 role + name 확인
   let role = "user";
+  let currentUserName: string | undefined;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, name")
       .eq("id", user.id)
       .single();
     role = profile?.role ?? "user";
+    currentUserName =
+      profile?.name ?? (user.user_metadata?.name as string | undefined);
   }
 
-  // 경기 목록 (날짜 오름차순 — 가까운 경기가 위로)
+  // 경기 목록 (날짜 오름차순)
   const { data: matches } = await supabase
     .from("matches")
     .select("id, date, location, fee, description, created_at")
     .order("date", { ascending: true });
 
   const matchList = (matches ?? []) as Match[];
-
-  // 전체 참석 정보 (한 번에 fetch)
   const matchIds = matchList.map((m) => m.id);
-  const { data: attendanceData } = matchIds.length > 0
-    ? await supabase
-        .from("attendance")
-        .select("id, match_id, user_id, status, profiles(name)")
-        .in("match_id", matchIds)
-    : { data: [] };
 
-  const allAttendance = (attendanceData ?? []) as unknown as AttendanceRow[];
+  if (matchIds.length === 0) {
+    // 경기 없을 때 바로 렌더
+    const upcoming: Match[] = [];
+    const past: Match[] = [];
+    return renderPage(role, upcoming, past, [], new Map(), new Map(), user?.id, currentUserName, !!user);
+  }
+
+  // ── 참석 정보 ──────────────────────────────────────────
+  const { data: rawAttendance } = await supabase
+    .from("attendance")
+    .select("id, match_id, user_id, status")
+    .in("match_id", matchIds);
+
+  const attendanceList = (rawAttendance ?? []) as Omit<AttendanceRow, "profiles">[];
+
+  // ── 팀 구성 조회 (team_c_members 포함) ──────────────────
+  const { data: teamsData } = await supabase
+    .from("teams")
+    .select("match_id, team_a_members, team_b_members, team_c_members")
+    .in("match_id", matchIds);
+
+  const rawTeams = (teamsData ?? []) as RawTeam[];
+
+  // ── 프로필 조회 (참석자 + 팀 배정 멤버 통합) ──────────
+  const attendanceUserIds = attendanceList.map((a) => a.user_id);
+  const teamUserIds = rawTeams.flatMap((t) => [
+    ...t.team_a_members,
+    ...t.team_b_members,
+    ...(t.team_c_members ?? []),
+  ]);
+  const allUserIds = [...new Set([...attendanceUserIds, ...teamUserIds])];
+
+  const { data: profilesData } =
+    allUserIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, name, jersey_number, position")
+          .in("id", allUserIds)
+      : { data: [] };
+
+  const profileMap = new Map<string, ProfileRow>(
+    (profilesData ?? []).map((p: ProfileRow) => [p.id, p])
+  );
+
+  // 참석 정보에 이름 매핑
+  const allAttendance: AttendanceRow[] = attendanceList.map((a) => ({
+    ...a,
+    profiles: profileMap.has(a.user_id)
+      ? { name: profileMap.get(a.user_id)!.name }
+      : null,
+  }));
+
+  // ── 팀 배정 표시 데이터 빌드 ────────────────────────────
+  function resolveMembers(ids: string[]) {
+    return ids.map((id) => {
+      const p = profileMap.get(id);
+      return {
+        id,
+        name: p?.name ?? "알 수 없음",
+        jersey_number: p?.jersey_number ?? null,
+        position: p?.position ?? null,
+      };
+    });
+  }
+
+  const teamDisplayMap = new Map<string, TeamDisplay>();
+  for (const t of rawTeams) {
+    const isThreeTeam = t.team_c_members !== null;
+    const hasMembers =
+      t.team_a_members.length > 0 ||
+      t.team_b_members.length > 0 ||
+      (t.team_c_members ?? []).length > 0 ||
+      isThreeTeam; // 3팀 모드로 저장됐다면 빈 팀도 표시
+    teamDisplayMap.set(
+      t.match_id,
+      hasMembers
+        ? {
+            teamA: resolveMembers(t.team_a_members),
+            teamB: resolveMembers(t.team_b_members),
+            // null = 2팀 모드, 배열 = 3팀 모드
+            teamC: isThreeTeam ? resolveMembers(t.team_c_members!) : null,
+          }
+        : null
+    );
+  }
+
+  // ── 영상 링크 조회 ────────────────────────────────────
+  const { data: videosData } = await supabase
+    .from("videos")
+    .select("match_id, category")
+    .in("match_id", matchIds);
+
+  const videoLinkMap = new Map<string, VideoLink>();
+  for (const v of (videosData ?? []) as { match_id: string; category: string }[]) {
+    if (!v.match_id) continue;
+    const existing = videoLinkMap.get(v.match_id) ?? { hasFull: false, hasHighlight: false };
+    videoLinkMap.set(v.match_id, {
+      hasFull: existing.hasFull || v.category === "full",
+      hasHighlight: existing.hasHighlight || v.category === "highlight",
+    });
+  }
 
   const upcoming = matchList.filter((m) => new Date(m.date) >= new Date());
   const past = matchList.filter((m) => new Date(m.date) < new Date());
+
+  return renderPage(
+    role,
+    upcoming,
+    past,
+    allAttendance,
+    teamDisplayMap,
+    videoLinkMap,
+    user?.id,
+    currentUserName,
+    !!user
+  );
+}
+
+// ── JSX 렌더 분리 ────────────────────────────────────────
+function renderPage(
+  role: string,
+  upcoming: Match[],
+  past: Match[],
+  allAttendance: AttendanceRow[],
+  teamDisplayMap: Map<string, TeamDisplay>,
+  videoLinkMap: Map<string, VideoLink>,
+  currentUserId: string | undefined,
+  currentUserName: string | undefined,
+  isLoggedIn: boolean
+) {
+  const totalMatches = upcoming.length + past.length;
 
   return (
     <div>
@@ -75,7 +217,7 @@ export default async function MatchesPage() {
       {/* Supabase Realtime 구독 */}
       <RealtimeListener />
 
-      {matchList.length === 0 ? (
+      {totalMatches === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <p className="text-4xl mb-3">🏀</p>
           <p className="font-medium">등록된 경기 일정이 없습니다</p>
@@ -99,8 +241,11 @@ export default async function MatchesPage() {
                     attendance={allAttendance.filter(
                       (a) => a.match_id === match.id
                     )}
-                    currentUserId={user?.id}
-                    isLoggedIn={!!user}
+                    teamDisplay={teamDisplayMap.get(match.id) ?? null}
+                    videoLink={videoLinkMap.get(match.id) ?? null}
+                    currentUserId={currentUserId}
+                    currentUserName={currentUserName}
+                    isLoggedIn={isLoggedIn}
                   />
                 ))}
               </div>
@@ -121,8 +266,11 @@ export default async function MatchesPage() {
                     attendance={allAttendance.filter(
                       (a) => a.match_id === match.id
                     )}
-                    currentUserId={user?.id}
-                    isLoggedIn={!!user}
+                    teamDisplay={teamDisplayMap.get(match.id) ?? null}
+                    videoLink={videoLinkMap.get(match.id) ?? null}
+                    currentUserId={currentUserId}
+                    currentUserName={currentUserName}
+                    isLoggedIn={isLoggedIn}
                   />
                 ))}
               </div>

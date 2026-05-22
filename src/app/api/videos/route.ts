@@ -1,25 +1,50 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
-export async function POST(req: Request) {
-  const supabase = await createClient();
+async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  return profile?.role === "admin" ? user : null;
+}
 
-  if (!user) {
-    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+// POST /api/videos
+export async function POST(req: Request) {
+  const supabase = await createClient();
+  const admin = await requireAdmin(supabase);
+  if (!admin)
+    return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
+
+  const { title, youtube_url, category, match_id, player_ids } =
+    await req.json();
+
+  if (!title || !youtube_url || !category) {
+    return NextResponse.json(
+      { error: "필수 항목이 누락되었습니다." },
+      { status: 400 }
+    );
   }
 
-  const { title, description, url } = await req.json();
-  if (!title || !url) {
-    return NextResponse.json({ error: "제목과 URL을 입력해주세요." }, { status: 400 });
-  }
-
-  const video = await prisma.video.create({
-    data: { title, description, url, authorId: user.id },
+  const { error } = await supabase.from("videos").insert({
+    title,
+    youtube_url,
+    category,
+    match_id: match_id || null,
+    player_ids:
+      Array.isArray(player_ids) && player_ids.length > 0 ? player_ids : null,
   });
 
-  return NextResponse.json(video, { status: 201 });
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
+
+  revalidatePath("/videos");
+  revalidatePath("/matches");
+  return NextResponse.json({ ok: true });
 }
