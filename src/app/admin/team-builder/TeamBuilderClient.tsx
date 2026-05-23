@@ -34,24 +34,24 @@ function PlayerCard({ player, index }: { player: Player; index: number }) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`bg-white border rounded-xl px-4 py-3 flex items-center gap-3 mb-2 select-none transition-all ${
+          className={`bg-white rounded-xl px-4 py-3 flex items-center gap-3 mb-2 select-none transition-all ${
             snapshot.isDragging
-              ? "shadow-xl ring-2 ring-orange-300 rotate-1 opacity-95"
-              : "border-gray-200 shadow-sm hover:shadow-md"
+              ? "shadow-xl ring-2 ring-[#0071e3] rotate-1 opacity-95"
+              : "shadow-sm hover:shadow-md"
           }`}
         >
-          <span className="inline-flex items-center justify-center w-8 h-8 bg-orange-100 rounded-full text-sm font-bold text-orange-600 flex-shrink-0">
+          <span className="inline-flex items-center justify-center w-8 h-8 bg-[#0071e3] text-white text-[13px] font-bold rounded-full flex-shrink-0">
             {player.jersey_number ?? "?"}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-sm text-gray-900">{player.name}</p>
+            <p className="font-semibold text-[14px] text-[#1d1d1f]">{player.name}</p>
             {player.position && (
-              <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+              <span className="text-[11px] text-[#6e6e73] bg-black/[0.04] px-1.5 py-0.5 mt-0.5 inline-block rounded-full">
                 {player.position}
               </span>
             )}
           </div>
-          <span className="text-gray-300 text-sm flex-shrink-0">⠿</span>
+          <span className="text-[#c7c7cc] text-sm flex-shrink-0">⠿</span>
         </div>
       )}
     </Draggable>
@@ -59,39 +59,35 @@ function PlayerCard({ player, index }: { player: Player; index: number }) {
 }
 
 // ── 드롭 존 ──────────────────────────────────────────────
-type ZoneColor = "gray" | "orange" | "blue" | "green";
+type ZoneColor = "gray" | "black" | "blue" | "green";
 
 const ZONE_STYLES: Record<
   ZoneColor,
-  { border: string; header: string; badge: string; hover: string; idle: string }
+  { header: string; badge: string; hover: string; idle: string }
 > = {
   gray: {
-    border: "border-gray-200",
-    header: "bg-gray-50 border-gray-200 text-gray-700",
-    badge: "bg-gray-200 text-gray-600",
-    hover: "bg-gray-100",
-    idle: "bg-gray-50",
+    header: "bg-black/[0.04] text-[#6e6e73]",
+    badge: "bg-black/[0.08] text-[#6e6e73]",
+    hover: "bg-black/[0.06]",
+    idle: "bg-black/[0.02]",
   },
-  orange: {
-    border: "border-orange-200",
-    header: "bg-orange-50 border-orange-200 text-orange-700",
-    badge: "bg-orange-200 text-orange-700",
-    hover: "bg-orange-100",
-    idle: "bg-orange-50",
+  black: {
+    header: "bg-[#1d1d1f] text-white",
+    badge: "bg-white/20 text-white",
+    hover: "bg-[#1d1d1f]/[0.06]",
+    idle: "bg-[#1d1d1f]/[0.03]",
   },
   blue: {
-    border: "border-blue-200",
-    header: "bg-blue-50 border-blue-200 text-blue-700",
-    badge: "bg-blue-200 text-blue-700",
-    hover: "bg-blue-100",
-    idle: "bg-blue-50",
+    header: "bg-[#0071e3] text-white",
+    badge: "bg-white/20 text-white",
+    hover: "bg-[#0071e3]/[0.08]",
+    idle: "bg-[#0071e3]/[0.04]",
   },
   green: {
-    border: "border-green-200",
-    header: "bg-green-50 border-green-200 text-green-700",
-    badge: "bg-green-200 text-green-700",
-    hover: "bg-green-100",
-    idle: "bg-green-50",
+    header: "bg-[#34c759]/80 text-white",
+    badge: "bg-white/20 text-white",
+    hover: "bg-[#34c759]/[0.10]",
+    idle: "bg-[#34c759]/[0.05]",
   },
 };
 
@@ -108,14 +104,10 @@ function Zone({
 }) {
   const s = ZONE_STYLES[color];
   return (
-    <div
-      className={`flex-1 border-2 ${s.border} rounded-2xl overflow-hidden flex flex-col min-w-0`}
-    >
-      <div
-        className={`${s.header} border-b px-4 py-3 flex items-center justify-between flex-shrink-0`}
-      >
-        <span className="font-bold text-sm truncate">{title}</span>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ml-2 flex-shrink-0 ${s.badge}`}>
+    <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col min-w-0">
+      <div className={`${s.header} px-4 py-3 flex items-center justify-between flex-shrink-0`}>
+        <span className="font-semibold text-[14px] truncate">{title}</span>
+        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ml-2 flex-shrink-0 ${s.badge}`}>
           {players.length}명
         </span>
       </div>
@@ -308,14 +300,14 @@ export default function TeamBuilderClient({ matches }: Props) {
   return (
     <div>
       {/* 경기 선택 */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
+        <label className="block text-[12px] font-semibold text-[#6e6e73] mb-2">
           경기 선택
         </label>
         <select
           value={selectedMatchId}
           onChange={(e) => setSelectedMatchId(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+          className="w-full bg-[#f5f5f7] rounded-xl px-4 py-2.5 text-[14px] text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3] transition-all"
         >
           <option value="">-- 경기를 선택하세요 --</option>
           {matches.map((m) => (
@@ -327,49 +319,52 @@ export default function TeamBuilderClient({ matches }: Props) {
       </div>
 
       {loading && (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-[#6e6e73] bg-white rounded-2xl shadow-sm">
           <p className="text-2xl mb-2">⏳</p>
-          <p className="text-sm">참석자 정보를 불러오는 중...</p>
+          <p className="text-[14px]">참석자 정보를 불러오는 중...</p>
         </div>
       )}
 
       {!selectedMatchId && !loading && (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-3">🏀</p>
-          <p className="font-medium">경기를 선택하면 참석자가 표시됩니다</p>
-          <p className="text-sm mt-1">드래그 앤 드랍으로 팀을 구성하세요</p>
+        <div className="text-center py-24 text-[#6e6e73] bg-white rounded-2xl shadow-sm">
+          <div className="flex justify-center mb-4">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M19 5C19 12 5 12 5 19" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M5 5C5 12 19 12 19 19" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <p className="font-semibold text-[#1d1d1f]">경기를 선택하면 참석자가 표시됩니다</p>
+          <p className="text-[14px] mt-1">드래그 앤 드랍으로 팀을 구성하세요</p>
         </div>
       )}
 
       {selectedMatchId && !loading && (
         <>
           {!hasPlayers && (
-            <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl border border-gray-200 mb-6">
+            <div className="text-center py-12 text-[#6e6e73] bg-white rounded-2xl shadow-sm mb-6">
               <p className="text-3xl mb-2">🙅</p>
-              <p className="font-medium text-sm">이 경기에 참석자가 없습니다</p>
+              <p className="font-semibold text-[14px] text-[#1d1d1f]">이 경기에 참석자가 없습니다</p>
             </div>
           )}
 
           {hasPlayers && (
             <>
-              {/* 3팀 토글 버튼 */}
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400">
-                  {showThirdTeam
-                    ? "3팀 모드 — A / B / C 팀"
-                    : "2팀 모드 — 블랙 / 화이트 팀"}
+                <p className="text-[11px] font-semibold text-[#6e6e73] uppercase tracking-widest">
+                  {showThirdTeam ? "3팀 모드 — A / B / C 팀" : "2팀 모드 — 블랙 / 화이트 팀"}
                 </p>
                 {!showThirdTeam ? (
                   <button
                     onClick={handleAddThirdTeam}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-[12px] font-medium text-[#0071e3] bg-[#0071e3]/[0.08] hover:bg-[#0071e3]/[0.14] px-3 py-1.5 rounded-full transition-all"
                   >
-                    ➕ 3번째 팀 추가하기
+                    + 3번째 팀 추가
                   </button>
                 ) : (
                   <button
                     onClick={handleRemoveThirdTeam}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-[12px] font-medium text-[#6e6e73] bg-black/[0.04] hover:bg-black/[0.08] px-3 py-1.5 rounded-full transition-all"
                   >
                     ✕ C 팀 삭제
                   </button>
@@ -380,7 +375,9 @@ export default function TeamBuilderClient({ matches }: Props) {
               <DragDropContext onDragEnd={onDragEnd}>
                 <div
                   className={`grid gap-4 ${
-                    showThirdTeam ? "grid-cols-4" : "grid-cols-3"
+                    showThirdTeam
+                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                      : "grid-cols-1 md:grid-cols-3"
                   }`}
                 >
                   <Zone
@@ -392,7 +389,7 @@ export default function TeamBuilderClient({ matches }: Props) {
                   <Zone
                     droppableId="team-a"
                     title={teamALabel}
-                    color="orange"
+                    color="black"
                     players={teamA}
                   />
                   <Zone
@@ -412,50 +409,38 @@ export default function TeamBuilderClient({ matches }: Props) {
                 </div>
               </DragDropContext>
 
-              {/* 하단 상태바 + 저장 버튼 */}
-              <div className="flex items-center justify-between mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-4">
-                <div className="text-sm text-gray-500">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6 bg-white rounded-2xl shadow-sm px-5 py-4">
+                <div className="text-[13px] text-[#6e6e73]">
                   {showThirdTeam ? (
                     <>
-                      A팀{" "}
-                      <span className="font-bold text-orange-600">{teamA.length}명</span>
+                      A팀 <span className="font-semibold text-[#1d1d1f]">{teamA.length}명</span>
                       {" · "}
-                      B팀{" "}
-                      <span className="font-bold text-blue-600">{teamB.length}명</span>
+                      B팀 <span className="font-semibold text-[#0071e3]">{teamB.length}명</span>
                       {" · "}
-                      C팀{" "}
-                      <span className="font-bold text-green-600">{teamC.length}명</span>
+                      C팀 <span className="font-semibold text-[#34c759]">{teamC.length}명</span>
                       {" · "}
-                      대기{" "}
-                      <span className="font-bold text-gray-600">{waiting.length}명</span>
+                      대기 <span className="font-semibold text-[#6e6e73]">{waiting.length}명</span>
                     </>
                   ) : (
                     <>
-                      블랙{" "}
-                      <span className="font-bold text-orange-600">{teamA.length}명</span>
+                      블랙 <span className="font-semibold text-[#1d1d1f]">{teamA.length}명</span>
                       {" · "}
-                      화이트{" "}
-                      <span className="font-bold text-blue-600">{teamB.length}명</span>
+                      화이트 <span className="font-semibold text-[#0071e3]">{teamB.length}명</span>
                       {" · "}
-                      대기{" "}
-                      <span className="font-bold text-gray-600">{waiting.length}명</span>
+                      대기 <span className="font-semibold text-[#6e6e73]">{waiting.length}명</span>
                     </>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
                   {saveMsg && (
-                    <span
-                      className={`text-sm font-medium ${
-                        saveMsg.ok ? "text-green-600" : "text-red-500"
-                      }`}
-                    >
+                    <span className={`text-[12px] font-semibold ${saveMsg.ok ? "text-[#34c759]" : "text-red-500"}`}>
                       {saveMsg.text}
                     </span>
                   )}
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-orange-500 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-60 text-sm"
+                    className="bg-[#0071e3] text-white px-5 py-2 rounded-full font-medium text-[13px] hover:bg-[#0077ed] transition-all disabled:opacity-60"
                   >
                     {saving ? "저장 중..." : "팀 구성 저장"}
                   </button>

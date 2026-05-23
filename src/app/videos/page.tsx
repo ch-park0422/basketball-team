@@ -63,14 +63,13 @@ export default async function VideosPage({
   const profiles = (profilesData ?? []) as Profile[];
 
   return (
-    <div>
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">경기 영상</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {category === "full" ? "🎬 경기 풀 영상" : "⭐ 하이라이트"} ·{" "}
-            {videos.length}개
+          <p className="text-[11px] font-semibold text-[#6e6e73] uppercase tracking-widest mb-1">Videos</p>
+          <h1 className="text-[28px] font-bold text-[#1d1d1f] tracking-tight">경기 영상</h1>
+          <p className="text-[#6e6e73] text-[14px] mt-1">
+            {category === "full" ? "경기 풀 영상" : "하이라이트"} · {videos.length}개
           </p>
         </div>
         {role === "admin" && (
@@ -78,7 +77,6 @@ export default async function VideosPage({
         )}
       </div>
 
-      {/* 탭 + 필터 + 영상 그리드 */}
       <VideoTabs
         videos={videos}
         matches={matches}

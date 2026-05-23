@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 
-type Props = {
-  profileId: string;
-  currentRole: string;
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  user: "일반",
-  admin: "관리자",
-};
+type Props = { profileId: string; currentRole: string };
 
 export default function RoleSelector({ profileId, currentRole }: Props) {
   const [role, setRole] = useState(currentRole);
@@ -32,7 +24,7 @@ export default function RoleSelector({ profileId, currentRole }: Props) {
     } else {
       const data = await res.json();
       alert(data.error ?? "저장 실패");
-      setRole(currentRole); // 롤백
+      setRole(currentRole);
       setStatus("error");
       setTimeout(() => setStatus("idle"), 1500);
     }
@@ -44,20 +36,14 @@ export default function RoleSelector({ profileId, currentRole }: Props) {
         value={role}
         onChange={(e) => handleChange(e.target.value)}
         disabled={status === "saving"}
-        className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50"
+        className="text-[12px] bg-black/[0.04] rounded-lg px-2.5 py-1.5 text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3] disabled:opacity-50 transition-all"
       >
         <option value="user">일반</option>
         <option value="admin">관리자</option>
       </select>
-      {status === "saving" && (
-        <span className="text-xs text-gray-400">저장 중...</span>
-      )}
-      {status === "saved" && (
-        <span className="text-xs text-green-500">✓ 저장됨</span>
-      )}
-      {status === "error" && (
-        <span className="text-xs text-red-500">✗ 실패</span>
-      )}
+      {status === "saving" && <span className="text-[12px] text-[#6e6e73]">저장 중...</span>}
+      {status === "saved" && <span className="text-[12px] text-[#34c759] font-semibold">✓ 저장됨</span>}
+      {status === "error" && <span className="text-[12px] text-red-500">✗ 실패</span>}
     </div>
   );
 }

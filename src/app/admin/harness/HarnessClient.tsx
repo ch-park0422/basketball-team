@@ -165,7 +165,7 @@ export default function HarnessClient() {
   return (
     <div>
       {/* ── 컨트롤 패널 ──────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-dashed border-orange-300 shadow-sm p-5 mb-8">
+      <div className="bg-white border border-dashed border-zinc-300 p-5 mb-8">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-base">🧪</span>
           <p className="font-bold text-gray-800 text-sm">테스트 컨트롤</p>
@@ -180,7 +180,7 @@ export default function HarnessClient() {
             <div
               onClick={() => setIsLoggedIn((v) => !v)}
               className={`relative w-9 h-5 rounded-full transition-colors ${
-                isLoggedIn ? "bg-orange-500" : "bg-gray-300"
+                isLoggedIn ? "bg-black" : "bg-zinc-300"
               }`}
             >
               <div
@@ -190,7 +190,7 @@ export default function HarnessClient() {
               />
             </div>
             <span className="text-gray-700 font-medium">로그인 상태</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${isLoggedIn ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-500"}`}>
+            <span className={`text-xs px-1.5 py-0.5 font-medium ${isLoggedIn ? "bg-black text-white" : "bg-zinc-100 text-zinc-500"}`}>
               {isLoggedIn ? "ON" : "OFF"}
             </span>
           </label>

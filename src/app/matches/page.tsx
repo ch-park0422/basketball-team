@@ -202,45 +202,45 @@ function renderPage(
   const totalMatches = upcoming.length + past.length;
 
   return (
-    <div>
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">경기 일정</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-[11px] font-semibold text-[#6e6e73] uppercase tracking-widest mb-1">Schedule</p>
+          <h1 className="text-[28px] font-bold text-[#1d1d1f] tracking-tight">경기 일정</h1>
+          <p className="text-[#6e6e73] text-[14px] mt-1">
             {upcoming.length}경기 예정 · {past.length}경기 완료
           </p>
         </div>
         {role === "admin" && <CreateMatchModal />}
       </div>
 
-      {/* Supabase Realtime 구독 */}
       <RealtimeListener />
 
       {totalMatches === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-3">🏀</p>
-          <p className="font-medium">등록된 경기 일정이 없습니다</p>
+        <div className="text-center py-24 text-[#6e6e73] bg-white rounded-2xl shadow-sm">
+          <div className="flex justify-center mb-4">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M19 5C19 12 5 12 5 19" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M5 5C5 12 19 12 19 19" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <p className="font-semibold text-[#1d1d1f]">등록된 경기 일정이 없습니다</p>
           {role === "admin" && (
-            <p className="text-sm mt-1">위 버튼으로 첫 경기를 등록해 보세요</p>
+            <p className="text-[14px] mt-1 text-[#6e6e73]">위 버튼으로 첫 경기를 등록해 보세요</p>
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* 예정된 경기 */}
+        <div className="space-y-10">
           {upcoming.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                예정된 경기
-              </h2>
+              <p className="text-[11px] font-semibold text-[#6e6e73] uppercase tracking-widest mb-4">예정된 경기</p>
               <div className="space-y-4">
                 {upcoming.map((match) => (
                   <MatchCard
                     key={match.id}
                     match={match}
-                    attendance={allAttendance.filter(
-                      (a) => a.match_id === match.id
-                    )}
+                    attendance={allAttendance.filter((a) => a.match_id === match.id)}
                     teamDisplay={teamDisplayMap.get(match.id) ?? null}
                     videoLink={videoLinkMap.get(match.id) ?? null}
                     currentUserId={currentUserId}
@@ -252,20 +252,15 @@ function renderPage(
             </section>
           )}
 
-          {/* 지난 경기 */}
           {past.length > 0 && (
-            <section className="mt-8">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                지난 경기
-              </h2>
+            <section>
+              <p className="text-[11px] font-semibold text-[#6e6e73] uppercase tracking-widest mb-4">지난 경기</p>
               <div className="space-y-4">
                 {[...past].reverse().map((match) => (
                   <MatchCard
                     key={match.id}
                     match={match}
-                    attendance={allAttendance.filter(
-                      (a) => a.match_id === match.id
-                    )}
+                    attendance={allAttendance.filter((a) => a.match_id === match.id)}
                     teamDisplay={teamDisplayMap.get(match.id) ?? null}
                     videoLink={videoLinkMap.get(match.id) ?? null}
                     currentUserId={currentUserId}
