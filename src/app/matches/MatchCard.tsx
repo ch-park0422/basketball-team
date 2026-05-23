@@ -133,13 +133,16 @@ type Props = {
   currentUserId: string | undefined;
   currentUserName: string | undefined;
   isLoggedIn: boolean;
+  isAdmin?: boolean;
 };
 
-export default function MatchCard({ match, attendance, teamDisplay, videoLink, currentUserId, currentUserName, isLoggedIn }: Props) {
+export default function MatchCard({ match, attendance, teamDisplay, videoLink, currentUserId, currentUserName, isLoggedIn, isAdmin }: Props) {
   const router = useRouter();
   const serverStatus = attendance.find((a) => a.user_id === currentUserId)?.status ?? null;
   const [myStatus, setMyStatus] = useState<string | null>(serverStatus);
   const [voting, setVoting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!voting) setMyStatus(serverStatus);
@@ -161,6 +164,18 @@ export default function MatchCard({ match, attendance, teamDisplay, videoLink, c
 
   const matchDate = new Date(match.date);
   const isPast = matchDate < new Date();
+
+  async function handleDelete() {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      setTimeout(() => setDeleteConfirm(false), 3000);
+      return;
+    }
+    setDeleting(true);
+    const res = await fetch(`/api/matches/${match.id}`, { method: "DELETE" });
+    setDeleting(false);
+    if (res.ok) router.refresh();
+  }
 
   async function vote(status: "attendance" | "absence") {
     if (!isLoggedIn || voting) return;
@@ -308,6 +323,22 @@ export default function MatchCard({ match, attendance, teamDisplay, videoLink, c
       )}
 
       {teamDisplay && <TeamAssignmentSection teamDisplay={teamDisplay} />}
+
+      {isAdmin && (
+        <div className="border-t border-black/[0.06] px-5 py-3 flex justify-end">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 ${
+              deleteConfirm
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-black/[0.04] text-[#6e6e73] hover:bg-red-50 hover:text-red-500"
+            }`}
+          >
+            {deleting ? "삭제 중…" : deleteConfirm ? "정말 삭제" : "경기 삭제"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

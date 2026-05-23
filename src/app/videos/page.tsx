@@ -84,6 +84,7 @@ export default async function VideosPage({
         category={category}
         matchId={matchId}
         playerId={playerId}
+        isAdmin={role === "admin"}
       />
     </div>
   );

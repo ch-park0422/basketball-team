@@ -40,6 +40,36 @@ export async function POST(req: Request) {
     }
   }
 
+  // 불참으로 변경 시 teams 배열에서 유저 ID 자동 제거
+  if (status === "absence") {
+    const { data: teamsRow } = await supabase
+      .from("teams")
+      .select("id, team_a_members, team_b_members, team_c_members")
+      .eq("match_id", matchId)
+      .single();
+
+    if (teamsRow) {
+      const uid = user.id;
+      const newA = (teamsRow.team_a_members ?? []).filter((id: string) => id !== uid);
+      const newB = (teamsRow.team_b_members ?? []).filter((id: string) => id !== uid);
+      const newC = teamsRow.team_c_members !== null
+        ? (teamsRow.team_c_members ?? []).filter((id: string) => id !== uid)
+        : null;
+
+      const changed =
+        newA.length !== (teamsRow.team_a_members ?? []).length ||
+        newB.length !== (teamsRow.team_b_members ?? []).length ||
+        (newC !== null && newC.length !== (teamsRow.team_c_members ?? []).length);
+
+      if (changed) {
+        await supabase
+          .from("teams")
+          .update({ team_a_members: newA, team_b_members: newB, team_c_members: newC })
+          .eq("id", teamsRow.id);
+      }
+    }
+  }
+
   revalidatePath("/matches");
   return NextResponse.json({ ok: true });
 }

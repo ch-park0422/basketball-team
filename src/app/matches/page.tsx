@@ -73,7 +73,7 @@ export default async function MatchesPage() {
     // 경기 없을 때 바로 렌더
     const upcoming: Match[] = [];
     const past: Match[] = [];
-    return renderPage(role, upcoming, past, [], new Map(), new Map(), user?.id, currentUserName, !!user);
+    return renderPage(role, upcoming, past, [], new Map(), new Map(), user?.id, currentUserName, !!user, role === "admin");
   }
 
   // ── 참석 정보 ──────────────────────────────────────────
@@ -183,7 +183,8 @@ export default async function MatchesPage() {
     videoLinkMap,
     user?.id,
     currentUserName,
-    !!user
+    !!user,
+    role === "admin"
   );
 }
 
@@ -197,7 +198,8 @@ function renderPage(
   videoLinkMap: Map<string, VideoLink>,
   currentUserId: string | undefined,
   currentUserName: string | undefined,
-  isLoggedIn: boolean
+  isLoggedIn: boolean,
+  isAdmin: boolean
 ) {
   const totalMatches = upcoming.length + past.length;
 
@@ -246,6 +248,7 @@ function renderPage(
                     currentUserId={currentUserId}
                     currentUserName={currentUserName}
                     isLoggedIn={isLoggedIn}
+                    isAdmin={role === "admin"}
                   />
                 ))}
               </div>
@@ -266,6 +269,7 @@ function renderPage(
                     currentUserId={currentUserId}
                     currentUserName={currentUserName}
                     isLoggedIn={isLoggedIn}
+                    isAdmin={role === "admin"}
                   />
                 ))}
               </div>
