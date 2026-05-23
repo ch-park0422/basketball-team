@@ -28,7 +28,15 @@ export async function DELETE(req: Request) {
   }
 
   // 이후 모든 삭제는 service role(RLS 우회)로 처리
-  const service = createServiceClient();
+  let service: ReturnType<typeof createServiceClient>;
+  try {
+    service = createServiceClient();
+  } catch {
+    return NextResponse.json(
+      { error: "서버 설정 오류: SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다." },
+      { status: 503 }
+    );
+  }
 
   // 1. 투표 기록 삭제
   await service.from("attendance").delete().eq("user_id", targetId);
