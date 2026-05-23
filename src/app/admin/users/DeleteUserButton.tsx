@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   profileId: string;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export default function DeleteUserButton({ profileId, name, onDeleted }: Props) {
+  const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
@@ -26,7 +28,8 @@ export default function DeleteUserButton({ profileId, name, onDeleted }: Props) 
     setDeleting(false);
 
     if (res.ok) {
-      onDeleted(profileId);
+      onDeleted(profileId); // 낙관적 UI 업데이트
+      router.refresh();     // 서버 state도 동기화
     } else {
       const data = await res.json();
       alert(data.error ?? "삭제에 실패했습니다.");

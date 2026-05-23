@@ -113,25 +113,28 @@ export default async function MatchesPage() {
     (profilesData ?? []).map((p: ProfileRow) => [p.id, p])
   );
 
-  // 참석 정보에 이름 매핑
-  const allAttendance: AttendanceRow[] = attendanceList.map((a) => ({
-    ...a,
-    profiles: profileMap.has(a.user_id)
-      ? { name: profileMap.get(a.user_id)!.name }
-      : null,
-  }));
+  // 참석 정보에 이름 매핑 — profiles에 없는 탈퇴/삭제 유저는 제외
+  const allAttendance: AttendanceRow[] = attendanceList
+    .filter((a) => profileMap.has(a.user_id))
+    .map((a) => ({
+      ...a,
+      profiles: { name: profileMap.get(a.user_id)!.name },
+    }));
 
   // ── 팀 배정 표시 데이터 빌드 ────────────────────────────
+  // profiles에 없는 ID는 필터링하여 화면에 노출되지 않도록 방어
   function resolveMembers(ids: string[]) {
-    return ids.map((id) => {
-      const p = profileMap.get(id);
-      return {
-        id,
-        name: p?.name ?? "알 수 없음",
-        jersey_number: p?.jersey_number ?? null,
-        position: p?.position ?? null,
-      };
-    });
+    return ids
+      .filter((id) => profileMap.has(id))
+      .map((id) => {
+        const p = profileMap.get(id)!;
+        return {
+          id,
+          name: p.name,
+          jersey_number: p.jersey_number ?? null,
+          position: p.position ?? null,
+        };
+      });
   }
 
   const teamDisplayMap = new Map<string, TeamDisplay>();
